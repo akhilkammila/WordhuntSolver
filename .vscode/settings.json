@@ -6,6 +6,7 @@
         "utility": "cpp",
         "algorithm": "cpp",
         "iostream": "cpp",
-        "limits": "cpp"
+        "limits": "cpp",
+        "string": "cpp"
     }
 }

@@ -5,11 +5,15 @@
 #include <map>
 #include <algorithm>
 #include <limits>
+#include <unordered_set>
 using namespace std;
 
 // Debug
 #define DEBUG(...) debug(#__VA_ARGS__, __VA_ARGS__)
 #include </Users/akhilkammila/Competitive Programming/debug.h>
+
+// Declarations
+int calculateReward(string &word);
 
 /*
 Global variables
@@ -51,7 +55,7 @@ void construct_trie() {
 /*
 Step 2:
 Reads in the user's board in the form of a string
-Ensures the string is 16 letters long and formats to uppercase
+Ensures the string is 16 letters long
 */
 void inputBoard() {
     // Reads in 16 letter long string
@@ -60,10 +64,8 @@ void inputBoard() {
     while(bString.size() != N*N) {
         cout << "Input Board:" << endl;
         cin >> bString;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
-    
-    // Converts to upper case
+
     for(int i = 0; i < bString.size(); i++) {
         bString[i] = toupper(bString[i]);
     }
@@ -185,6 +187,51 @@ void filterByLength() {
 }
 
 /*
+Favors words with longer length, but only chooses
+the words necessary to reach the goal
+Words remain sorted in dfs order
+    Pros: gets high value words and preserves sorted order
+    Cons: don't account for diagonals, complexity, etc.
+*/
+void filterByGoal(int percentGoal = 25) {
+    // Calculate the goal
+    int total = 0;
+    int length = 0;
+    for(int i = 0; i < words.size(); i++) {
+        total += calculateReward(words[i]);
+        length = max(length, (int) words[i].size());
+    }
+    int goal = total * percentGoal/100;
+    cout << total << ' ' << goal << endl;
+
+    // Record the longest words that we want to add such that we are under our goal
+    unordered_set<string> finalWords;
+    int points = 0;
+    int i = 0;
+    while (points < goal) {
+        // Look for shorter words
+        if (i == words.size()) {
+            i = 0;
+            length--;
+        }
+
+        // Check if word is of current size
+        if (words[i].size() == length) {
+            finalWords.insert(words[i]);
+            points += calculateReward(words[i]);
+        }
+        i++;
+    }
+
+    // Fill in the words we found
+    for(int i = 0; i < words.size(); i++) {
+        if (finalWords.count(words[i])) {
+            filteredWords.push_back(words[i]);
+        }
+    }
+}
+
+/*
 Step 5:
 Print the words
 For experimenting and optimization, this step stores results
@@ -210,7 +257,7 @@ int calculateSimilarity(string &word, string &prevWord) {
 
 // Calculates the points that the word gives
 map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
-{7, 1800}, {8, 2200}, {9, 3600}, {10, 100000}, {11, 100000}, {12, 100000}};
+{7, 1800}, {8, 2200}, {9, 2600}, {10, 3000}, {11, 3400}, {12, 3800}};
 int calculateReward(string &word) {
     return points[word.size()];
 }
@@ -225,7 +272,7 @@ void printWords() {
 
 void results() {
     string endWord;
-    cout << "Input the first word you didn't reach" << '\n';
+    cout << "Input the last word you reached" << '\n';
     cin >> endWord;
 
     long long reward = 0;
@@ -247,7 +294,7 @@ int main() {
     construct_trie();
     inputBoard();
     searchWords();
-    filterBySize();
+    filterByGoal();
     printWords();
     results();
 }
