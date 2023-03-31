@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <algorithm>
 using namespace std;
 
 // Debug
@@ -98,7 +99,10 @@ bool existsWord(pair<int,int> cell, TrieNode* curr) {
 }
 
 void addWord(TrieNode* curr, string word) {
-    if (word.size() >= 3 && curr->word) words.push_back(word);
+    if (word.size() >= 3 && curr->word) {
+        words.push_back(word);
+        curr->word = false; //prevents repeats
+    }
 }
 
 /*
@@ -138,8 +142,41 @@ void searchWords() {
     }
 }
 
-// 
-void printWords() {
+/*
+Step 4: Prints out all the words
+The way that the words are printed out greatly affects performance
+There are multiple choices for word order
+*/
+
+/*
+Basic: Prints out all words in dfs order, with a min length of 
+    Pros: inputting each word is fast, because each path is not too dif. from prev path
+    Cons: don't get through many words, miss out on high value words later on
+Average score: 13k
+Usually only get through words starting at the top row
+*/
+void printWords(int minLength = 5) {
+    minLength = max(minLength, 3);
+    // Prints words in dfs order
+    for(int i = 0; i < words.size(); i++) {
+        if (words[i].size() >= minLength)
+            fout << words[i] << '\n';
+    }
+}
+
+/*
+Organizes words by length
+This is what most wordhunt solvers do
+    Pros: does not miss out on high value words
+    Cons: inputting each word is very slow
+Average score: also 10k
+Putting each word is slow
+*/
+bool compareLen(string &a, string &b) {
+    return a.size() > b.size();
+}
+void printWordsByLength() {
+    sort(words.begin(), words.end(), compareLen);
     for(int i = 0; i < words.size(); i++) {
         fout << words[i] << '\n';
     }
