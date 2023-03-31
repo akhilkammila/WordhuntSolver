@@ -5,7 +5,14 @@
 #include <map>
 using namespace std;
 
-// Global vars
+// Debug
+// #define DEBUG(...) debug(#__VA_ARGS__, __VA_ARGS__)
+// #include </Users/akhilkammila/Competitive Programming/debug.h>
+
+/*
+Global variables
+*/
+const int N = 4;
 vector<vector<char>> board;
 vector<string> words;
 
@@ -15,11 +22,15 @@ struct TrieNode {
 };
 TrieNode root;
 
-/// Construct Trie Data Structure
-void construct_trie() {
-    ifstream fin("dictionary.txt");
-	ofstream fout("solved.txt");
+ifstream fin("dictionary.txt");
+ofstream fout("solved.txt");
 
+/*
+Step 1:
+Parses words from dictionary.txt
+and creates a trie to store all the words
+*/
+void construct_trie() {
     string w;
     while(fin >> w) {
         TrieNode *curr = &root;
@@ -34,28 +45,109 @@ void construct_trie() {
     }
 }
 
-/// Read in the input board
-void inputBoard(int size = 4) {
-    board.resize(size, vector<char>());
-    string bString; cin >> bString;
-    for(int i = 0; i < size; i++) {
-        for(int j = 0; j < size; j++) {
-            board[i].push_back(bString[i*size + j]);
+/*
+Step 2:
+Reads in the user's board in the form of a string
+Ensures the string is 16 letters long and formats to uppercase
+*/
+void inputBoard() {
+    // Reads in 16 letter long string
+    board.resize(N, vector<char>());
+    string bString;
+    while(bString.size() != N*N) {
+        cout << "Input Board:" << endl;
+        cin >> bString;
+    }
+    
+    // Converts to upper case
+    for(int i = 0; i < bString.size(); i++) {
+        bString[i] = toupper(bString[i]);
+    }
+
+    // Creates a 4x4 board
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            board[i].push_back(bString[i*N + j]);
         }
     }
 }
 
-// Search through all possible words
-// Add valid words when depth >= 3
-// Terminate when there is no longer a possible word
-void searchWords(int r, int c, TrieNode *curr, int depth = 0) {
-    if (r < 0 || r >= 0) {
-        return;
+/*
+Step 3:
+Search through all possible words
+*/
+
+/*
+Helper functions to
+1) ensure that the cell we are attempting to visit is within the 4x4 grid
+2) ensure that the cell is not already on the current path
+3) ensure that if we visit the cell, there is a word that exists along that path
+4) adds the word if it is valid (if it is marked in the trie as a word)
+*/
+bool inBounds(pair<int,int> cell) {
+    return 0 <= cell.first && cell.first < N && 0 <= cell.second && cell.second < N;
+}
+
+bool notRepeated(pair<int,int> cell, vector<vector<bool>> &visited) {
+    return !visited[cell.first][cell.second];
+}
+
+bool existsWord(pair<int,int> cell, TrieNode* curr) {
+    char l = board[cell.first][cell.second];
+    return curr->children.find(l) != curr->children.end();
+}
+
+void addWord(TrieNode* curr, string word) {
+    if (word.size() >= 3 && curr->word) words.push_back(word);
+}
+
+/*
+Recurses through every possible word
+*/
+vector<pair<int,int>> offset = {{0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1}, {-1,0},{-1,-1}};
+void dfs(pair<int,int> cell, vector<vector<bool>> &visited, string word, TrieNode* curr) {
+    addWord(curr, word);
+    for (pair<int,int> change : offset) {
+        pair<int,int> newCell = make_pair(cell.first + change.first, cell.second + change.second);
+
+        if (inBounds(newCell) && notRepeated(newCell, visited) && existsWord(newCell, curr)) {
+            char l = board[newCell.first][newCell.second];
+
+            visited[newCell.first][newCell.second] = true;
+            dfs(newCell, visited, word + l, curr->children[l]);
+            visited[newCell.first][newCell.second] = false;
+        }
     }
 }
 
+/*
+Starts a dfs at each of the 16 cells in the 4x4 board
+*/
+void searchWords() {
+    vector<vector<bool>> visited(N, vector<bool>(N, false));
+    for(int y = 0; y < N; y++) {
+        for(int x = 0; x < N; x++) {
+            pair<int,int> cell = make_pair(y, x);
+            char l = board[y][x];
+            string s(1, l);
+
+            visited[cell.first][cell.second] = true;
+            dfs(make_pair(y, x), visited, s, root.children[l]);
+            visited[cell.first][cell.second] = false;
+        }
+    }
+}
+
+// 
+void printWords() {
+    for(int i = 0; i < words.size(); i++) {
+        fout << words[i] << '\n';
+    }
+}
 
 int main() {
     construct_trie();
     inputBoard();
+    searchWords();
+    printWords();
 }
