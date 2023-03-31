@@ -4,11 +4,12 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <limits>
 using namespace std;
 
 // Debug
-// #define DEBUG(...) debug(#__VA_ARGS__, __VA_ARGS__)
-// #include </Users/akhilkammila/Competitive Programming/debug.h>
+#define DEBUG(...) debug(#__VA_ARGS__, __VA_ARGS__)
+#include </Users/akhilkammila/Competitive Programming/debug.h>
 
 /*
 Global variables
@@ -16,6 +17,7 @@ Global variables
 const int N = 4;
 vector<vector<char>> board;
 vector<string> words;
+vector<string> filteredWords;
 
 struct TrieNode {
     map<char, TrieNode*> children;
@@ -58,6 +60,7 @@ void inputBoard() {
     while(bString.size() != N*N) {
         cout << "Input Board:" << endl;
         cin >> bString;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
     
     // Converts to upper case
@@ -143,24 +146,25 @@ void searchWords() {
 }
 
 /*
-Step 4: Prints out all the words
-The way that the words are printed out greatly affects performance
-There are multiple choices for word order
+Step 4:
+Sort and filter the words
+The order that the words are printed out greatly affects speed
+We cannot get through all the words - which ones should we choose?
 */
 
 /*
-Basic: Prints out all words in dfs order, with a min length of 
+Basic: Prints out all words in dfs order, with a min length of x
     Pros: inputting each word is fast, because each path is not too dif. from prev path
     Cons: don't get through many words, miss out on high value words later on
 Average score: 13k
 Usually only get through words starting at the top row
 */
-void printWords(int minLength = 5) {
+void filterBySize(int minLength = 3) {
     minLength = max(minLength, 3);
-    // Prints words in dfs order
+
     for(int i = 0; i < words.size(); i++) {
         if (words[i].size() >= minLength)
-            fout << words[i] << '\n';
+            filteredWords.push_back(words[i]);
     }
 }
 
@@ -175,16 +179,75 @@ Putting each word is slow
 bool compareLen(string &a, string &b) {
     return a.size() > b.size();
 }
-void printWordsByLength() {
-    sort(words.begin(), words.end(), compareLen);
-    for(int i = 0; i < words.size(); i++) {
-        fout << words[i] << '\n';
+void filterByLength() {
+    filteredWords = words;
+    sort(filteredWords.begin(), filteredWords.end(), compareLen);
+}
+
+/*
+Step 5:
+Print the words
+For experimenting and optimization, this step stores results
+Results stored:
+    Score
+    Word we got up until
+    Similarity score
+*/
+
+// Calculates the similarity to the prevoius word
+int calculateSimilarity(string &word, string &prevWord) {
+    int similarity = 0;
+    int minLength = min(word.size(), prevWord.size());
+
+    int i = 0;
+    while(i < minLength && word[i] == prevWord[i]) {
+        similarity++;
+        i++;
     }
+
+    return similarity;
+}
+
+// Calculates the points that the word gives
+map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
+{7, 1800}, {8, 2200}, {9, 3600}, {10, 100000}, {11, 100000}, {12, 100000}};
+int calculateReward(string &word) {
+    return points[word.size()];
+}
+
+// Prints the words
+void printWords() {
+    for(int i = 0; i < filteredWords.size(); i++) {
+        fout << filteredWords[i] << '\n';
+    }
+    fout << endl;
+}
+
+void results() {
+    string endWord;
+    cout << "Input the first word you didn't reach" << '\n';
+    cin >> endWord;
+
+    long long reward = 0;
+    long long similarity = 0;
+    long long numWords = 0;
+    string lastWord = "";
+
+    for(int i = 0; i < filteredWords.size() && lastWord != endWord; i++) {
+        string currWord = filteredWords[i];
+        reward += calculateReward(currWord);
+        similarity += calculateSimilarity(currWord, lastWord);
+        numWords++;
+        lastWord = currWord;
+    }
+    cout << "score: " << reward << " similarity: " << similarity << " words: " << numWords << endl;
 }
 
 int main() {
     construct_trie();
     inputBoard();
     searchWords();
+    filterBySize();
     printWords();
+    results();
 }
