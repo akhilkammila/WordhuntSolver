@@ -1,3 +1,16 @@
+/**
+ * @file WordHuntSolver.cpp
+ * @author your name (you@domain.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-03-31
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ * Word Hunt Solver
+ * Has filters by size, length, and goal
+ */
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -21,8 +34,9 @@ Global variables
 const int N = 4;
 vector<vector<char>> board;
 vector<string> words;
-vector<string> filteredWords;
+vector<int> complexities;
 
+vector<string> filteredWords;
 struct TrieNode {
     map<char, TrieNode*> children;
     bool word;
@@ -187,6 +201,18 @@ void filterByLength() {
 }
 
 /*
+Places the words in finalWords into filteredWords
+in sorted order
+*/
+unordered_set<string> finalWords;
+void convertSetToList() {
+    for(int i = 0; i < words.size(); i++) {
+        if (finalWords.count(words[i])) {
+            filteredWords.push_back(words[i]);
+        }
+    }
+}
+/*
 Favors words with longer length, but only chooses
 the words necessary to reach the goal
 Words remain sorted in dfs order
@@ -204,8 +230,7 @@ void filterByGoal(int percentGoal = 25) {
     int goal = total * percentGoal/100;
     cout << total << ' ' << goal << endl;
 
-    // Record the longest words that we want to add such that we are under our goal
-    unordered_set<string> finalWords;
+    // Add the longest words while we are under our goal
     int points = 0;
     int i = 0;
     while (points < goal) {
@@ -222,13 +247,7 @@ void filterByGoal(int percentGoal = 25) {
         }
         i++;
     }
-
-    // Fill in the words we found
-    for(int i = 0; i < words.size(); i++) {
-        if (finalWords.count(words[i])) {
-            filteredWords.push_back(words[i]);
-        }
-    }
+    convertSetToList();
 }
 
 /*
@@ -296,5 +315,5 @@ int main() {
     searchWords();
     filterByGoal();
     printWords();
-    results();
+    // results();
 }

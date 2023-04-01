@@ -7,6 +7,7 @@
         "algorithm": "cpp",
         "iostream": "cpp",
         "limits": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "fstream": "cpp"
     }
 }
