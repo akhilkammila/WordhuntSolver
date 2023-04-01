@@ -22,24 +22,27 @@
 using namespace std;
 
 // Debug
+#ifdef LOCAL
 #define DEBUG(...) debug(#__VA_ARGS__, __VA_ARGS__)
 #include </Users/akhilkammila/Competitive Programming/debug.h>
-
-// Declarations
-int calculateReward(string &word);
+#else
+#define DEBUG(...) 47;
+#endif
 
 /*
 Global variables
 */
 const int N = 4;
-const int complexityBound = 1700;
+const int complexityBound = 1400;
 const int baseComplexity = 50;
 const int diagComplexity = 5;
 const int repeatComplexity = 20;
+map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
+    {7, 1800}, {8, 2200}, {9, 2600}, {10, 3000}, {11, 3400}, {12, 3800}};
 vector<vector<char>> board;
 vector<pair<string,pair<int,int>>> words; //word, <complexity, complexityUpdate>
-
 vector<string> filteredWords;
+
 struct TrieNode {
     map<char, TrieNode*> children;
     bool word;
@@ -106,6 +109,7 @@ Helper functions to
 2) ensure that the cell is not already on the current path
 3) ensure that if we visit the cell, there is a word that exists along that path
 4) adds the word if it is valid (if it is marked in the trie as a word)
+5) find the complexity that a new letter adds (based on diagonals, repeat letters, etc.)
 */
 bool inBounds(pair<int,int> cell) {
     return 0 <= cell.first && cell.first < N && 0 <= cell.second && cell.second < N;
@@ -142,9 +146,7 @@ int complexityChange(pair<int,int> &cell, pair<int,int> &offset) {
     return diag * diagComplexity + repeats*repeatComplexity;
 }
 
-/*
-Recurses through every possible word
-*/
+// Recurses through every possible word
 void dfs(pair<int,int> cell, vector<vector<bool>> &visited, string word, TrieNode* curr, int complexity) {
     addWord(curr, word, complexity);
     for (pair<int,int> offset : directions) {
@@ -161,9 +163,8 @@ void dfs(pair<int,int> cell, vector<vector<bool>> &visited, string word, TrieNod
     }
 }
 
-/*
-Starts a dfs at each of the 16 cells in the 4x4 board
-*/
+
+// Starts a dfs at each of the 16 cells in the 4x4 board
 void searchWords() {
     vector<vector<bool>> visited(N, vector<bool>(N, false));
     for(int y = 0; y < N; y++) {
@@ -181,12 +182,22 @@ void searchWords() {
 
 /*
 Step 4:
-Sort and filter the words
-The order that the words are printed out greatly affects speed
+Filters and sorts the words
 We cannot get through all the words - which ones should we choose?
+    We filter based on multiple factors that affect "complexity":
+    a base complexity that every word has
+    # of diagonals in the word
+    # of repeat letters in the word
+    similarity to other added words (this is a very important one!)
+The order that the words are printed out also greatly affects speed
 */
-vector<pair<string,pair<int,int>>> words2;
 
+// Returns the reward that a word gives
+int calculateReward(string &word) {
+    return points[word.size()];
+}
+
+// Chooses the best word to add based on the reward-to-complexity ratio
 pair<string,pair<int,int>> findBestRatio() {
     pair<string,pair<int,int>> best;
 
@@ -201,6 +212,7 @@ pair<string,pair<int,int>> findBestRatio() {
     return best;
 }
 
+// Finds the similarity between two words (used to update complexity)
 int findSimilarity(string &a, string &b) {
     int l = min(a.size(), b.size());
     int i = 0;
@@ -211,6 +223,9 @@ int findSimilarity(string &a, string &b) {
     return 0;
 }
 
+// Given that a word was added, set its complexity to INF
+// and update all other words (complexity of similar words
+// are reduced)
 void updateComplexities(string word) {
     for(int i = 0; i < words.size(); i++) {
         pair<string,pair<int,int>> *entry = &words[i];
@@ -221,6 +236,8 @@ void updateComplexities(string word) {
     }
 }
 
+// Function to filter words. Repeatedly chooses the word with the
+// best reward-to-complexity ratio, and updates other words' complexities
 void filterByComplexity() {
     unordered_set<string> chosenWords;
     int complexityLeft = complexityBound;
@@ -233,7 +250,7 @@ void filterByComplexity() {
         updateComplexities(entry.first);
     }
 
-    // Convert set to list
+    // Puts the chosenWords into a list (with dfs order preserved)
     for(int i = 0; i < words.size(); i++) {
         if (chosenWords.count(words[i].first)) {
             filteredWords.push_back(words[i].first);
@@ -243,37 +260,8 @@ void filterByComplexity() {
 
 /*
 Step 5:
-Print the words
-For experimenting and optimization, this step stores results
-Results stored:
-    Score
-    Word we got up until
-    Similarity score
+Prints the words
 */
-
-// Calculates the similarity to the prevoius word
-int calculateSimilarity(string &word, string &prevWord) {
-    int similarity = 0;
-    int minLength = min(word.size(), prevWord.size());
-
-    int i = 0;
-    while(i < minLength && word[i] == prevWord[i]) {
-        similarity++;
-        i++;
-    }
-
-    return similarity;
-}
-
-// Calculates the points that the word gives
-map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
-{7, 1800}, {8, 2200}, {9, 2600}, {10, 3000}, {11, 3400}, {12, 3800}};
-
-int calculateReward(string &word) {
-    return points[word.size()];
-}
-
-// Prints the words
 void printWords() {
     for(int i = 0; i < filteredWords.size(); i++) {
         string word = filteredWords[i];
@@ -288,5 +276,4 @@ int main() {
     searchWords();
     filterByComplexity();
     printWords();
-    // results();
 }
