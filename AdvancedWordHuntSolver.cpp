@@ -1,14 +1,20 @@
 /**
- * @file WordHuntSolver.cpp
- * @author your name (you@domain.com)
- * @brief 
- * @version 0.1
- * @date 2023-03-31
+ * Author: Akhil Kammila (https://github.com/akhilkammila)
  * 
- * @copyright Copyright (c) 2023
+ * Implements an advanced solver for WordHunt – an iMessage word game
  * 
- * Word Hunt Solver
- * Has filters by size, length, and goal
+ * This solver finds all possible words on a WordHunt board. It then chooses
+ * a subset of the words based on a reward-to-complexity ratio. Complexity is
+ * based on number of diagonals, ambiguity in the word's path, and (most importantly)
+ * similarity to other chosen words. It then displays words in an optimal ordering.
+ * 
+ * The words are chosen using a greedy approach similar to Dijstra's algorithm.
+ * The word with the best reward-to-complexity ratio is chosen, and the complexity of
+ * "neighboring" words with similar prefixes is reduced.
+ * 
+ * Usage:
+ * Hit run, and input the board in the form of a lowercase string, with no spaces.
+ * The solved board will be printed to "solved.txt" (takes less than a second).
  */
 
 #include <fstream>
@@ -21,7 +27,7 @@
 #include <unordered_set>
 using namespace std;
 
-// Debug
+// Debug template (ignore)
 #ifdef LOCAL
 #define DEBUG(...) debug(#__VA_ARGS__, __VA_ARGS__)
 #include </Users/akhilkammila/Competitive Programming/debug.h>
@@ -40,7 +46,7 @@ const int repeatComplexity = 20;
 map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
     {7, 1800}, {8, 2200}, {9, 2600}, {10, 3000}, {11, 3400}, {12, 3800}};
 vector<vector<char>> board;
-vector<pair<string,pair<int,int>>> words; //word, <complexity, complexityUpdate>
+vector<pair<string,pair<int,int>>> words; //<word, <complexity, complexityUpdate>>
 vector<string> filteredWords;
 
 struct TrieNode {
@@ -54,8 +60,8 @@ ofstream fout("solved.txt");
 
 /*
 Step 1:
-Parses words from dictionary.txt
-and creates a trie to store all the words
+Parses words from dictionary.txt and
+creates a trie to store all the words
 */
 void construct_trie() {
     string w;
@@ -100,7 +106,7 @@ void inputBoard() {
 
 /*
 Step 3:
-Search through all possible words
+Search (dfs) through all possible words
 */
 
 /*
@@ -146,7 +152,7 @@ int complexityChange(pair<int,int> &cell, pair<int,int> &offset) {
     return diag * diagComplexity + repeats*repeatComplexity;
 }
 
-// Recurses through every possible word
+// Recurses through every possible word from a certain start cell
 void dfs(pair<int,int> cell, vector<vector<bool>> &visited, string word, TrieNode* curr, int complexity) {
     addWord(curr, word, complexity);
     for (pair<int,int> offset : directions) {
@@ -265,9 +271,9 @@ Prints the words
 void printWords() {
     for(int i = 0; i < filteredWords.size(); i++) {
         string word = filteredWords[i];
-        fout << word << '\n';
+        cout << word << '\n';
     }
-    fout << endl;
+    cout << endl;
 }
 
 int main() {

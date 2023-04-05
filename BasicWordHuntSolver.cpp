@@ -15,6 +15,7 @@
  *     Cons: inputting words is very slow, there is no order
  * 
  * 2. filterBySize(): removes words under a certain length, and keeps DFS order
+ * (sorted by path direction)
  *     Pros: preserves a fast order in which similar words are next to each other
  *     Cons: highest value words may not be reached
  * 
@@ -32,11 +33,6 @@
  * The solved board will be printed to "solved.txt" (takes less than a second).
  * To change settings, switch filterByLength() in the main function (at the bottom)
  * to the desired setting. (ex. replace filterByLength() with filterByGoal())
- * 
- * @copyright Copyright (c) 2023
- * 
- * Word Hunt Solver
- * Has filters by size, length, and goal
  */
 
 #include <fstream>
@@ -345,7 +341,7 @@ int main() {
     construct_trie();
     inputBoard();
     searchWords();
-    filterByLength();
+    filterBySize();
     printWords();
     // results();
 }
