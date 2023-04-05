@@ -1,35 +1,37 @@
 /**
  * Author: Akhil Kammila (https://github.com/akhilkammila)
  * 
- * Implements the best solver for WordHunt – an iMessage word game
+ * Implements a naive solver for WordHunt – an iMessage word game
  * 
- * 1. What is WordHunt?
- * In WordHunt, players are presented with a 4x4 letter board. In 90
- * seconds, they match as many words as they can.
- * A "match" is accomplished by starting at one letter and moving to
- * adjacent squares (including diagonals), building a word along the way.
- * Letter cells cannot be reused in a single match.
- *  
- * Example:
- * O A T R
- * I H P S
- * H T N R
- * E N E I
- * TENS is a valid match.
- * RST is not a valid match (it is not a word)
- * TENT is not a valid match (reuses a letter)
- * THAT is a valid match (T is used twice, but the Ts are different)
+ * This solver finds all possible words on a WordHunt board using
+ * DFS and a Trie for pruning. It then displays words in a naive
+ * way, such as longest-to-shortest. Other online WordHunt solvers do
+ * exactly this.
  * 
- * Players receive points depending on the length of their matches.
- * Each 3-letter match: 100 points
- * 4-letter match: 400 points
- * 5-letter match: 800 points
- * 6-letter match: 1400 points
- * 7-letter match: 1800 points
- * ...
+ * This solver has three settings:
+ * 1. filterByLength(): orders words from longest to shortest (this is what
+ * all other WordHunt solvers do)
+ *     Pros: ensures that the highest value words are reached
+ *     Cons: inputting words is very slow, there is no order
  * 
- * 2. What is a WordHunt solver?
- * A WordHunt solver calculates all possible words on the grid.
+ * 2. filterBySize(): removes words under a certain length, and keeps DFS order
+ *     Pros: preserves a fast order in which similar words are next to each other
+ *     Cons: highest value words may not be reached
+ * 
+ * 3. filterByGoal(): chooses the longest words, but only until a certain point
+ * threshold is reached. preserves dfs order. (essentially a better version of
+ * filterByLength())
+ *     Pros: ensures that high value words are reached, and keeps dfs order
+ *     Cons: does not factor in word relatedness and other complexities
+ *     This is better than filterByLength() and filterBySize() in practice
+ * 
+ * For an advanced (and better) solver, see AdvancedWordHuntSolver.cpp.
+ * 
+ * Usage:
+ * Hit run, and input the board in the form of a lowercase string, with no spaces.
+ * The solved board will be printed to "solved.txt" (takes less than a second).
+ * To change settings, switch filterByLength() in the main function (at the bottom)
+ * to the desired setting. (ex. replace filterByLength() with filterByGoal())
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -343,7 +345,7 @@ int main() {
     construct_trie();
     inputBoard();
     searchWords();
-    filterByGoal();
+    filterByLength();
     printWords();
     // results();
 }
