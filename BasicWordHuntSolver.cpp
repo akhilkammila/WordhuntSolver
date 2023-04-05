@@ -1,9 +1,35 @@
 /**
- * @file WordHuntSolver.cpp
- * @author your name (you@domain.com)
- * @brief 
- * @version 0.1
- * @date 2023-03-31
+ * Author: Akhil Kammila (https://github.com/akhilkammila)
+ * 
+ * Implements the best solver for WordHunt – an iMessage word game
+ * 
+ * 1. What is WordHunt?
+ * In WordHunt, players are presented with a 4x4 letter board. In 90
+ * seconds, they match as many words as they can.
+ * A "match" is accomplished by starting at one letter and moving to
+ * adjacent squares (including diagonals), building a word along the way.
+ * Letter cells cannot be reused in a single match.
+ *  
+ * Example:
+ * O A T R
+ * I H P S
+ * H T N R
+ * E N E I
+ * TENS is a valid match.
+ * RST is not a valid match (it is not a word)
+ * TENT is not a valid match (reuses a letter)
+ * THAT is a valid match (T is used twice, but the Ts are different)
+ * 
+ * Players receive points depending on the length of their matches.
+ * Each 3-letter match: 100 points
+ * 4-letter match: 400 points
+ * 5-letter match: 800 points
+ * 6-letter match: 1400 points
+ * 7-letter match: 1800 points
+ * ...
+ * 
+ * 2. What is a WordHunt solver?
+ * A WordHunt solver calculates all possible words on the grid.
  * 
  * @copyright Copyright (c) 2023
  * 
