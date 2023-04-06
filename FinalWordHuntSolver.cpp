@@ -15,6 +15,8 @@
  * Usage:
  * Hit run, and input the board in the form of a lowercase string, with no spaces.
  * The solved board will be printed to "solved.txt" (takes less than a second).
+ * 
+ * oatrihpshtnrenei
  */
 
 #include <fstream>
@@ -24,7 +26,8 @@
 #include <map>
 #include <algorithm>
 #include <limits>
-#include <unordered_set>
+#include <set>
+#include "FinalWordHuntSolver.h"
 using namespace std;
 
 // Debug template (ignore)
@@ -39,48 +42,20 @@ using namespace std;
 Global variables
 */
 const int N = 4;
-const int complexityBound = 1400;
+const int complexityBound = 1500;
 const int baseComplexity = 50;
 const int diagComplexity = 5;
 const int repeatComplexity = 20;
 
-struct letter {
-    char l;
-    int row;
-    int col;
-    bool isDiag;
-    int repeat;
-};
-ostream& operator<<(ostream &os, const letter&l) {
-    return os << "\033[1;35m" << l.l;
-}
-bool operator==(const letter& la, const letter& lb)
-{
-    return (la.row == lb.row && la.col == lb.col);
-}
-struct word {
-    vector<letter> path;
-    int complexity;
-    int complexityUpdate;
-};
-ostream& operator<<(ostream &os, const word& w) {
-    for(letter l : w.path) {
-        os << l;
-    }
-    return os;
-}
-
 map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
     {7, 1800}, {8, 2200}, {9, 2600}, {10, 3000}, {11, 3400}, {12, 3800}};
+map<int,int> similarityWorth = {{0,0},{1,0},{2,0},{3,5},{4,10},{5,50},
+    {6,1000},{7,1000},{8,1000},{9,1000},{10,1000}};
 
 vector<vector<char>> board;
 vector<word> words; // all possible words
-vector<word> filteredWords; // the subset of words we choose
-
-struct TrieNode {
-    map<char, TrieNode*> children;
-    bool isWord;
-};
+vector<word> chosenWords; // the subset of words we choose
+vector<word> filteredWords; //chosenWords but in optimal order
 TrieNode root;
 
 ifstream fin("dictionary.txt");
@@ -145,10 +120,15 @@ Helper functions to
 4) adds the word if it is valid (if it is marked in the trie as a word)
 5) find the complexity that a new letter adds (based on diagonals, repeat letters, etc.)
 */
-bool inBounds(const letter &l) {
-    return 0 <= l.row && l.row < N && 0 <= l.col && l.col < N;
+
+// Check if a letter's position + an offset stays in bounds
+bool inBounds(const letter &l, const pair<int,int> &offset) {
+    int x = l.row + offset.first; int y = l.col + offset.second;
+    return 0 <= x && x < N && 0 <= y && y < N;
 }
 
+// Checks if a letter l can be added to word w
+// without causing a repeat
 bool notRepeated(const letter &l, const word &w) {
     for(letter used : w.path) {
         if (l == used) return false;
@@ -156,85 +136,93 @@ bool notRepeated(const letter &l, const word &w) {
     return true;
 }
 
+// Checks if we should prune the branch or not if we are at a letter l
+// and a TrieNode curr
 bool existsWord(const letter &l, const TrieNode* curr) {
     return curr->children.find(l.l) != curr->children.end();
 }
 
-void initializeLetter (letter &l) {
-    l.l = board[l.row][l.col];
-    l.isDiag = false;
-    l.repeat = 0;
-}
-
 // Given a word and a current node, adds the word to words if it is valid
-void addWord(const word &word, TrieNode* curr) {
+// returns whether a word was added
+bool addWord(const word &word, const TrieNode* curr) {
     int n = word.path.size();
     char c = word.path[n-1].l;
 
     if (n >= 3 && curr->isWord) {
-        words.push_back(word);
-        curr->isWord = false; //prevents repeats
+        words.push_back(word); // WORDS MODIFIED HERE
+        return true;
     }
+    return false;
 }
 
 vector<pair<int,int>> directions = {{-1,1},{0,1},{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0}};
-int complexityChange(letter &l, word &w) {
-    // Check for diagonal
+
+bool diagonal(const letter &l, const word &w) {
+    letter prev = w.path[w.path.size() - 1];
+    return (l.row - prev.row) != 0 && (l.col - prev.col) != 0;
+}
+
+pair<int,int> repeats(const letter &l, const word &w) {
     letter lastLetter = w.path[w.path.size() - 1];
-    bool diag = (l.row - lastLetter.row) != 0 && (l.col - lastLetter.col) != 0;
-    l.isDiag = diag;
-
-    // Check for repeats
     int repeats = 0;
+    int lRepeatNum = 0; //if there are repeats, check if l is 1st or 2nd
     for(pair<int,int> change : directions) {
-        letter neighborL;
-        neighborL.row = l.row + change.first; neighborL.col = l.col + change.second;
+        if (!inBounds(lastLetter, change)) continue;
 
-        if (inBounds(neighborL) && board[l.row][l.col] == l.l && notRepeated(neighborL, w)) repeats++;
+        letter n;
+        n.row = lastLetter.row + change.first;
+        n.col = lastLetter.col + change.second;
+
+        if (l.row == n.row && l.col == n.col) lRepeatNum = repeats;
+        else if (board[n.row][n.col] == l.l && notRepeated(n, w)) repeats++;
     }
-    repeats--;
-    l.repeat = repeats;
 
-    return diag * diagComplexity + repeats*repeatComplexity;
+    return make_tuple(repeats, lRepeatNum);
 }
 
 // Recurses through every possible word from a certain letter
 void dfs(word w, TrieNode* curr) {
-    addWord(w, curr); // if it is a valid word, add to words
+    if (addWord(w, curr)) curr->isWord = false; //prevents repeats
+
+    letter last = w.path[w.path.size() - 1];
 
     for (pair<int,int> offset : directions) {
-        letter l;
-        l.row = w.path[w.path.size() - 1].row + offset.first;
-        l.col = w.path[w.path.size() - 1].col + offset.second;
-        if (!inBounds(l)) continue;
-        initializeLetter(l);
+        if (!inBounds(last, offset)) continue;
+
+        int r = last.row + offset.first; int c = last.col + offset.second;
+        letter l = {board[r][c], r, c, false, 0};
 
         if (notRepeated(l, w) && existsWord(l, curr)) {
-            initializeLetter(l);
-            w.complexity += complexityChange(l, w); //marks l also
+            l.isDiag = diagonal(l, w);
+            tie(l.repeat, l.repeatNum) = repeats(l, w);
+            int cChange = l.isDiag * diagComplexity + l.repeat * repeatComplexity;
 
             w.path.push_back(l);
+            w.complexity += cChange;
             dfs(w, curr->children[l.l]);
             w.path.pop_back();
+            w.complexity -= cChange;
         }
     }
 }
-
 
 // Starts a dfs at each of the 16 cells in the 4x4 board
 void searchWords() {
     for(int r = 0; r < N; r++) {
         for(int c = 0; c < N; c++) {
-            word w;
-            letter l; l.row = r; l.col = c; l.l = board[r][c];
-        
+            word w = {
+                vector<letter>(), baseComplexity, 0, false
+            };
+            letter l = {
+                board[r][c], r, c, false, 0
+            };
+
             w.path.push_back(l);
             dfs(w, root.children[l.l]);
             w.path.pop_back();
         }
     }
 }
-// oatrihpshtnrenei
 
 /*
 Step 4:
@@ -248,95 +236,94 @@ We cannot get through all the words - which ones should we choose?
 The order that the words are printed out also greatly affects speed
 */
 
-// // Returns the reward that a word gives
-// int calculateReward(string &word) {
-//     return points[word.size()];
-// }
+// Returns the reward that a word gives
+int calculateReward(word &w) {
+    return points[w.path.size()];
+}
 
-// // Chooses the best word to add based on the reward-to-complexity ratio
-// pair<string,pair<int,int>> findBestRatio() {
-//     pair<string,pair<int,int>> best;
+// Chooses the best word to add based on the reward-to-complexity ratio
+word* findBestRatio() {
+    word* best;
+    double currRatio = 0;
 
-//     double currRatio = 0;
-//     for(pair<string,pair<int,int>> entry : words) {
-//         double ratio = (double) calculateReward(entry.first) / (entry.second.first - entry.second.second);
-//         if (ratio > currRatio) {
-//             currRatio = ratio;
-//             best = entry;
-//         }
-//     }
-//     return best;
-// }
+    for(int i = 0; i < words.size(); i++) {
+        word *w = &words[i];
+        if ((*w).chosen) continue;
+        double ratio = (double) calculateReward(*w) / ((*w).complexity - (*w).complexityUpdate);
 
-// // Finds the similarity between two words (used to update complexity)
-// int findSimilarity(string &a, string &b) {
-//     int l = min(a.size(), b.size());
-//     int i = 0;
-//     while(i < l && a[i] == b[i]) i++;
+        if (ratio > currRatio) {
+            currRatio = ratio;
+            best = w;
+        }
+    }
+    return best;
+}
 
-//     if (i > 5) return 60;
-//     if (i > 3) return 20;
-//     return 0;
-// }
+// Finds the similarity between two words (used to update complexity)
+int findSimilarity(word &a, word &b) {
+    int l = min(a.path.size(), b.path.size());
+    int i = 0;
+    while(i < l && a.path[i] == b.path[i]) i++;
+    return i;
+}
 
-// // Given that a word was added, set its complexity to INF
-// // and update all other words (complexity of similar words
-// // are reduced)
-// void updateComplexities(string word) {
-//     for(int i = 0; i < words.size(); i++) {
-//         pair<string,pair<int,int>> *entry = &words[i];
-//         int update = findSimilarity((*entry).first, word);
-//         int currentUpdate = (*entry).second.second;
-//         (*entry).second.second = min((*entry).second.first-1, max(update, currentUpdate));
-//         if ((*entry).first == word) (*entry).second.first = INT_MAX;
-//     }
-// }
+// Given that a word was added, set its complexity to INF
+// and update all other words (complexity of similar words
+// are reduced)
+void updateComplexities(word &w) {
+    for(int i = 0; i < words.size(); i++) {
+        word *w2 = &words[i];
+        int similarity = findSimilarity(*w2, w);
+        int update = similarityWorth[similarity];
 
-// // Function to filter words. Repeatedly chooses the word with the
-// // best reward-to-complexity ratio, and updates other words' complexities
-// void filterByComplexity() {
-//     unordered_set<string> chosenWords;
-//     int complexityLeft = complexityBound;
+        update = max(update, (*w2).complexityUpdate);
+        if ((*w2).complexity - update <= 0) update = (*w2).complexity - 1;
+        (*w2).complexityUpdate = update;
+    }
+}
 
-//     while(complexityLeft > 0) {
-//         pair<string,pair<int,int>> entry = findBestRatio();
-//         DEBUG(entry);
-//         complexityLeft -= (entry.second.first - entry.second.second);
-//         chosenWords.insert(entry.first);
-//         updateComplexities(entry.first);
-//     }
+void orderOptimally() {
+    for(int i = 0; i < words.size(); i++) {
+        bool isChosen = false;
+        for(word w : chosenWords) {
+            if (words[i] == w) isChosen = true;
+        }
+        if (isChosen) filteredWords.push_back(words[i]);
+    }
+}
 
-//     // Puts the chosenWords into a list (with dfs order preserved)
-//     for(int i = 0; i < words.size(); i++) {
-//         if (chosenWords.count(words[i].first)) {
-//             filteredWords.push_back(words[i].first);
-//         }
-//     }
-// }
+// Function to filter words. Repeatedly chooses the word with the
+// best reward-to-complexity ratio, and updates other words' complexities
+void chooseWords() {
+    int complexityLeft = complexityBound;
+
+    while(complexityLeft > 0) {
+        word* w = findBestRatio();
+
+        (*w).chosen = true;
+        complexityLeft -= ((*w).complexity - (*w).complexityUpdate);
+        chosenWords.push_back(*w);
+        updateComplexities(*w);
+    }
+}
 
 /*
 Step 5:
 Prints the words
 */
-// void printWords() {
-//     for(int i = 0; i < filteredWords.size(); i++) {
-//         string word = filteredWords[i];
-//         // add space between sections
-//         if (i > 0) {
-//             string prevWord = filteredWords[i-1];
-//             if (word[0] != prevWord[0]) cout << '\n';
-//         }
-//         cout << word << '\n';
-//     }
-//     cout << endl;
-// }
+void printWords() {
+    for(int i = 0; i < filteredWords.size(); i++) {
+        if (i > 0 && !(filteredWords[i].path[0] == filteredWords[i-1].path[0])) cout << '\n';
+        cout << filteredWords[i] << '\n';
+    }
+    cout << endl;
+}
 
 int main() {
-    construct_trie();
-    inputBoard();
-    searchWords();
-    DEBUG(words);
-    cout << words.size();
-    // filterByComplexity();
-    // printWords();
+    construct_trie(); //Part 1
+    inputBoard(); //Part 2
+    searchWords(); //Part 3
+    chooseWords(); // Part 4
+    orderOptimally();
+    printWords(); // Part 5
 }
