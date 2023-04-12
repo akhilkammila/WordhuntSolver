@@ -61,7 +61,6 @@ This is based on a reward-to-complexity ratio, which factors in:
 are near each other. This is only possible because we chose a subset
 of the very best words – something that other solves do not do.
 
-
 # 4. Implementation
 To find all possible words, the solver runs DFS on the inputted word board.
 It constructs a trie using the 2021 Scrabble Dictionary, and uses it to prune

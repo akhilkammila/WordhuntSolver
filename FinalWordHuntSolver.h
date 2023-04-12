@@ -5,15 +5,7 @@
 
 using namespace std;
 
-// Letter
-struct letter {
-    char l;
-    int row;
-    int col;
-    bool isDiag;
-    int repeat;
-    int repeatNum;
-};
+// Printing Colors
 map<string,string> colors = {
     {"default", "\033[1;30m"}, //black
     {"black", "\033[1;30m"},
@@ -23,12 +15,22 @@ map<string,string> colors = {
     {"green","\033[1;32m"},
     {"red","\033[1;31m"}
 };
+
+// Letter
+struct letter {
+    char l;
+    int row;
+    int col;
+    bool isDiag;
+    int repeat;
+    int repeatNum;
+};
 ostream& operator<<(ostream &os, const letter&l) {
     string color = "default";
     if (l.repeat) {
         color = (l.repeatNum == 0) ? "blue" : "red";
     }
-    else if (l.isDiag) color = "purple";
+    // else if (l.isDiag) color = "purple";
     return os << colors[color] << l.l << colors["default"];
 }
 bool operator==(const letter& la, const letter& lb)
@@ -52,12 +54,16 @@ ostream& operator<<(ostream &os, const word& w) {
 bool operator==(word &a, word &b) {
     return a.path == b.path;
 }
-bool operator<(word &a, word &b) { // bs ordering
-    return a.path.size() < b.path.size();
-}
 
 // TrieNode
 struct TrieNode {
     map<char, TrieNode*> children;
     bool isWord;
+};
+
+// Stats for vector of words
+struct WordListStats {
+    int numWords;
+    int totalReward;
+    int totalComplexity;
 };

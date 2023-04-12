@@ -55,8 +55,8 @@ struct TrieNode {
 };
 TrieNode root;
 
-ifstream fin("dictionary.txt");
-ofstream fout("solved.txt");
+ifstream fin("../dictionary.txt");
+ofstream fout("../solved.txt");
 
 /*
 Step 1:
@@ -250,7 +250,6 @@ void filterByComplexity() {
 
     while(complexityLeft > 0) {
         pair<string,pair<int,int>> entry = findBestRatio();
-        DEBUG(entry);
         complexityLeft -= (entry.second.first - entry.second.second);
         chosenWords.insert(entry.first);
         updateComplexities(entry.first);

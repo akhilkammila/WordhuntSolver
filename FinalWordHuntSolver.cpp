@@ -15,8 +15,6 @@
  * Usage:
  * Hit run, and input the board in the form of a lowercase string, with no spaces.
  * The solved board will be printed to "solved.txt" (takes less than a second).
- * 
- * oatrihpshtnrenei
  */
 
 #include <fstream>
@@ -42,10 +40,10 @@ using namespace std;
 Global variables
 */
 const int N = 4;
-const int complexityBound = 1300;
+const int complexityBound = 1000;
 const int baseComplexity = 50;
 const int diagComplexity = 10;
-const int repeatComplexity = 20;
+const int repeatComplexity = 10;
 
 map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
     {7, 1800}, {8, 2200}, {9, 2600}, {10, 3000}, {11, 3400}, {12, 3800}};
@@ -319,7 +317,6 @@ void printFilteredWords() {
     cout << endl;
 }
 
-
 bool compareByLength(const word &a, const word &b) {
     return a.path.size() > b.path.size();
 }
@@ -332,6 +329,36 @@ void printAdditionalWords() {
     }
 }
 
+WordListStats allWordsStats() {
+    WordListStats s = {0,0,0};
+
+    for(word w : words) {
+        s.numWords += 1;
+        s.totalReward += calculateReward(w);
+        s.totalComplexity += w.complexity;
+    }
+    return s;
+}
+WordListStats chosenWordsStats() {
+    WordListStats s = {0,0,0};
+
+    for(word w : filteredWords) {
+        s.numWords += 1;
+        s.totalReward += calculateReward(w);
+        s.totalComplexity += w.complexity;
+    }
+    return s;
+}
+void trackStats() {
+    WordListStats all = allWordsStats();
+    WordListStats chosen = chosenWordsStats();
+
+    cout << "total reward: " << all.totalReward << '\n';
+    cout << "total words: " << all.numWords << '\n';
+    cout << "chosen reward: " << chosen.totalReward << '\n';
+    cout << "chosen words: " << chosen.numWords << '\n';
+}
+
 int main() {
     construct_trie(); //Part 1
     inputBoard(); //Part 2
@@ -340,4 +367,5 @@ int main() {
     orderOptimally();
     printFilteredWords(); // Part 5
     printAdditionalWords();
+    trackStats();
 }

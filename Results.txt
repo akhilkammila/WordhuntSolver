@@ -1,3 +1,51 @@
 Board: ytlaqrwdiieresgh
-Score: 20200       Abhinav 
-Notes: 
+Score: 20200       Abhinav 23000
+total reward: 69800
+total words: 140
+chosen reward: 21000
+chosen words: 18
+
+Settings:
+const int N = 4;
+const int complexityBound = 1000;
+const int baseComplexity = 50;
+const int diagComplexity = 10;
+const int repeatComplexity = 10;
+
+VS SELF
+Board: awlleraopttcepfc
+Score: 23400
+Official Solve Score (iPad): 20100
+
+Board: auehlhirwodagorc
+Scire (iPad): 27800
+Official Solve Score: 26000
+
+VS Abhinav
+GAME 1
+Board: aooatevrrtdimldn
+total reward: 52200
+total words: 114
+chosen reward: 18600
+chosen words: 16
+Score: 21900
+Abhinav Sccore: 
+
+GAME 2
+Board: msiohhldcsaeencl
+total reward: 168900
+total words: 287
+chosen reward: 34600
+chosen words: 24
+Notes: missed last 4 words (including CLADISM)
+Score: 28800
+Abhinav Score:
+
+Game 3
+Board: vsaborbyetcunsnt
+total reward: 104000
+total words: 198
+chosen reward: 25200
+chosen words: 20
+Score: 26200
+Abhinav Score: 
