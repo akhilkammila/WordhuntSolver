@@ -56,8 +56,8 @@ vector<word> chosenWords; // the subset of words we choose
 vector<word> filteredWords; //chosenWords but in optimal order
 TrieNode root;
 
-ifstream fin("dictionary.txt");
-ofstream fout("solved.txt");
+ifstream fin("InputOutput/dictionary.txt");
+ofstream fout("InputOutput/solved.txt");
 
 /*
 Step 1:

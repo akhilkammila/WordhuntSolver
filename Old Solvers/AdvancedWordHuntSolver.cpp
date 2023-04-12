@@ -55,8 +55,8 @@ struct TrieNode {
 };
 TrieNode root;
 
-ifstream fin("../dictionary.txt");
-ofstream fout("../solved.txt");
+ifstream fin("../InputOutput/dictionary.txt");
+ofstream fout("../InputOutput/solved.txt");
 
 /*
 Step 1:
