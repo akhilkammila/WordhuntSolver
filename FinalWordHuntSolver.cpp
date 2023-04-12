@@ -42,9 +42,9 @@ using namespace std;
 Global variables
 */
 const int N = 4;
-const int complexityBound = 1500;
+const int complexityBound = 1300;
 const int baseComplexity = 50;
-const int diagComplexity = 5;
+const int diagComplexity = 10;
 const int repeatComplexity = 20;
 
 map<int,int> points = {{3,100}, {4,400}, {5, 800}, {6, 1400},
@@ -311,12 +311,25 @@ void chooseWords() {
 Step 5:
 Prints the words
 */
-void printWords() {
+void printFilteredWords() {
     for(int i = 0; i < filteredWords.size(); i++) {
         if (i > 0 && !(filteredWords[i].path[0] == filteredWords[i-1].path[0])) cout << '\n';
         cout << filteredWords[i] << '\n';
     }
     cout << endl;
+}
+
+
+bool compareByLength(const word &a, const word &b) {
+    return a.path.size() > b.path.size();
+}
+void printAdditionalWords() {
+    vector<word> sortedWords(words.begin(), words.end());
+    sort(sortedWords.begin(), sortedWords.end(), compareByLength);
+
+    for(word w: sortedWords) {
+        if (!w.chosen) cout << w << '\n';
+    }
 }
 
 int main() {
@@ -325,5 +338,6 @@ int main() {
     searchWords(); //Part 3
     chooseWords(); // Part 4
     orderOptimally();
-    printWords(); // Part 5
+    printFilteredWords(); // Part 5
+    printAdditionalWords();
 }

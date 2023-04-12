@@ -312,9 +312,9 @@ int calculateReward(string &word) {
 // Prints the words
 void printWords() {
     for(int i = 0; i < filteredWords.size(); i++) {
-        fout << filteredWords[i] << '\n';
+        cout << filteredWords[i] << '\n';
     }
-    fout << endl;
+    cout << endl;
 }
 
 void results() {
@@ -341,7 +341,7 @@ int main() {
     construct_trie();
     inputBoard();
     searchWords();
-    filterBySize();
+    filterByLength();
     printWords();
     // results();
 }

@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 // Letter
 struct letter {
     char l;
