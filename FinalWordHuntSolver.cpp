@@ -67,6 +67,7 @@ creates a trie to store all the words
 void construct_trie() {
     string w;
     while(fin >> w) {
+        cout << w << endl;
         TrieNode *curr = &root;
         for(int i = 0; i < w.size(); i++) {
             char l = w[i];
@@ -88,10 +89,11 @@ void inputBoard() {
     // Reads in 16 letter long string
     board.resize(N, vector<char>());
     string bString;
-    while(bString.size() != N*N) {
-        cout << "Input Board:" << endl;
-        cin >> bString;
-    }
+
+    // while(bString.size() != N*N) {
+    cout << "Input Board:" << endl;
+    cin >> bString;
+    // }
 
     for(int i = 0; i < bString.size(); i++) {
         bString[i] = toupper(bString[i]);
@@ -175,7 +177,7 @@ pair<int,int> repeats(const letter &l, const word &w) {
         else if (board[n.row][n.col] == l.l && notRepeated(n, w)) repeats++;
     }
 
-    return make_tuple(repeats, lRepeatNum);
+    return make_pair(repeats, lRepeatNum);
 }
 
 // Recurses through every possible word from a certain letter
@@ -208,6 +210,7 @@ void dfs(word w, TrieNode* curr) {
 void searchWords() {
     for(int r = 0; r < N; r++) {
         for(int c = 0; c < N; c++) {
+            cout << "searching " << r << " " << c << endl;
             word w = {
                 vector<letter>(), baseComplexity, 0, false
             };
@@ -308,6 +311,7 @@ void chooseWords() {
 /*
 Step 5:
 Prints the words
+Records stats of a board
 */
 void printFilteredWords() {
     for(int i = 0; i < filteredWords.size(); i++) {
@@ -361,11 +365,16 @@ void trackStats() {
 
 int main() {
     construct_trie(); //Part 1
+    cout << "Part 1 complete" << endl;
     inputBoard(); //Part 2
+    cout << "Part 2 complete" << endl;
     searchWords(); //Part 3
+    cout << "Part 3 complete" << endl;
     chooseWords(); // Part 4
+    cout << "Part 4 complete" << endl;
     orderOptimally();
     printFilteredWords(); // Part 5
     printAdditionalWords();
     trackStats();
+    cout << "Part 5 complete" << endl;
 }

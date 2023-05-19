@@ -28,8 +28,8 @@ total reward: 52200
 total words: 114
 chosen reward: 18600
 chosen words: 16
-Score: 21900
-Abhinav Sccore: 
+Score: 21900 (21 words)
+Abhinav Sccore: 14500 (39 words)
 
 GAME 2
 Board: msiohhldcsaeencl
@@ -38,8 +38,8 @@ total words: 287
 chosen reward: 34600
 chosen words: 24
 Notes: missed last 4 words (including CLADISM)
-Score: 28800
-Abhinav Score:
+Score: 28800 (20 words)
+Abhinav Score: 30200 (59 words)
 
 Game 3
 Board: vsaborbyetcunsnt
@@ -47,5 +47,28 @@ total reward: 104000
 total words: 198
 chosen reward: 25200
 chosen words: 20
-Score: 26200
-Abhinav Score: 
+Score: 26200 (21 words)
+Abhinav Score: 25400 (50 words)
+
+Game 4
+Board: hdrunisiashcrdva
+total reward: 97400
+total words: 184
+chosen reward: 29200
+chosen words: 23
+Score: 21900 (19 words)
+Abhinav Score: 15700 (52 words)
+
+Game 5
+Board: forgot to record
+Score: 14900 (16 words)
+Abhinav Score: 10500 (47 words)
+
+Game 6
+Board: yehsyaootiethnrw
+total reward: 76600
+total words: 176
+chosen reward: 25000
+chosen words: 18
+Score: 25800 (19 words)
+Abhinav Score: 17000 (48 words)
