@@ -1,17 +1,13 @@
 FROM gcc
 
-# Install GDB
-# RUN apt-get update && apt-get install -y gdb
-
 WORKDIR /app
 
 # Add files
-COPY . .
+COPY FinalWordHuntSolver.cpp /app
+COPY FinalWordHuntSolver.h /app
+RUN mkdir /app/InputOutput
+COPY InputOutput/dictionary.txt /app/InputOutput/
 
 # Run program
-RUN g++ -std=c++17 FinalWordHuntSolver.cpp -o FinalWordHuntSolver
+RUN g++ FinalWordHuntSolver.cpp -o FinalWordHuntSolver
 CMD ["./FinalWordHuntSolver"]
-
-# Compile with debug symbols and enable optimizations
-# RUN g++ -g -Og -std=c++17 FinalWordHuntSolver.cpp -o FinalWordHuntSolver
-# CMD ["gdb", "-ex", "run", "./FinalWordHuntSolver"]

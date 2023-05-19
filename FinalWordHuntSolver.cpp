@@ -67,7 +67,6 @@ creates a trie to store all the words
 void construct_trie() {
     string w;
     while(fin >> w) {
-        cout << w << endl;
         TrieNode *curr = &root;
         for(int i = 0; i < w.size(); i++) {
             char l = w[i];
@@ -210,7 +209,6 @@ void dfs(word w, TrieNode* curr) {
 void searchWords() {
     for(int r = 0; r < N; r++) {
         for(int c = 0; c < N; c++) {
-            cout << "searching " << r << " " << c << endl;
             word w = {
                 vector<letter>(), baseComplexity, 0, false
             };
@@ -365,16 +363,11 @@ void trackStats() {
 
 int main() {
     construct_trie(); //Part 1
-    cout << "Part 1 complete" << endl;
     inputBoard(); //Part 2
-    cout << "Part 2 complete" << endl;
     searchWords(); //Part 3
-    cout << "Part 3 complete" << endl;
     chooseWords(); // Part 4
-    cout << "Part 4 complete" << endl;
     orderOptimally();
     printFilteredWords(); // Part 5
     printAdditionalWords();
     trackStats();
-    cout << "Part 5 complete" << endl;
 }
