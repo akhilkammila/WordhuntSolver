@@ -6,8 +6,10 @@
 using namespace std;
 
 // Printing Colors
+// colors from: https://gist.github.com/Kielx/2917687bc30f567d45e15a4577772b02
 map<string,string> colors = {
-    {"default", "\033[1;30m"}, //black
+    {"default", "\033[37m"}, //white but not bold
+    {"white", "\033[1m\033[37m"},
     {"black", "\033[1;30m"},
     {"purple", "\033[1;35m"},
     {"yellow", "\033[1;33m"},
@@ -26,7 +28,7 @@ struct letter {
     int repeatNum;
 };
 ostream& operator<<(ostream &os, const letter&l) {
-    string color = "default";
+    string color = "white";
     if (l.repeat) {
         color = (l.repeatNum == 0) ? "blue" : "red";
     }
